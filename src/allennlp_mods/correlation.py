@@ -24,11 +24,12 @@ class FastMatthews(Metric):
     def __call__(self, predictions, labels):
         # Convert from Tensor if necessary
         if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
+            predictions = predictions.detach().cpu().numpy()
         if isinstance(labels, torch.Tensor):
-            labels = labels.cpu().numpy()
+            labels = labels.detach().cpu().numpy()
 
-        assert predictions.dtype in [np.int32, np.int64, int]
+        if predictions.dtype not in [np.int32, np.int64, int]:
+            predictions = predictions.argmax(axis=-1)
         assert labels.dtype in [np.int32, np.int64, int]
 
         C = confusion_matrix(labels.ravel(), predictions.ravel(),
@@ -102,9 +103,9 @@ class Correlation(Metric):
         """
         # Convert from Tensor if necessary
         if isinstance(predictions, torch.Tensor):
-            predictions = predictions.cpu().numpy()
+            predictions = predictions.detach().cpu().numpy()
         if isinstance(labels, torch.Tensor):
-            labels = labels.cpu().numpy()
+            labels = labels.detach().cpu().numpy()
 
         # Verify shape match
         assert predictions.shape == labels.shape, ("Predictions and labels must"
